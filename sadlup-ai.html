@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaDL uP - AI-Powered Daily Check-In</title>
+    <style>
+        /* Import warm, friendly fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=DM+Sans:wght@400;500;700&display=swap');
+        
+        :root {
+            /* SaDL uP color palette - saddle, leather, earth tones */
+            --bg-primary: #f5f1eb;
+            --bg-secondary: #fefdfb;
+            --text-primary: #3a2e27;
+            --text-secondary: #7a6a5d;
+            --accent-saddle: #8b6f47;
+            --accent-reins: #5d4e37;
+            --accent-highlight: #c4a57b;
+            --shadow: rgba(58, 46, 39, 0.1);
+            --border: #ddd5ca;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #f5f1eb 0%, #ebe4d8 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 40px var(--shadow);
+            animation: slideUp 0.6s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+        
+        /* Chat-style conversation bubbles */
+        .conversation {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.app {
+            align-items: flex-start;
+        }
+        
+        .message.user {
+            align-items: flex-end;
+        }
+        
+        .bubble {
+            max-width: 85%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .message.app .bubble {
+            background: linear-gradient(135deg, #f0ebe3 0%, #e8e0d5 100%);
+            border-bottom-left-radius: 4px;
+            color: var(--text-primary);
+        }
+        
+        .message.user .bubble {
+            background: linear-gradient(135deg, var(--accent-saddle) 0%, var(--accent-reins) 100%);
+            border-bottom-right-radius: 4px;
+            color: white;
+        }
+        
+        /* Loading indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 6px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #f0ebe3 0%, #e8e0d5 100%);
+            border-radius: 20px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+        }
+        
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-saddle);
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+        
+        /* Input controls */
+        .input-container {
+            margin-bottom: 20px;
+        }
+        
+        /* Text input */
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        input[type="text"] {
+            text-align: center;
+        }
+        
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-saddle);
+            background: white;
+        }
+        
+        /* Buttons */
+        .button-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button.primary {
+            background: linear-gradient(135deg, var(--accent-saddle) 0%, var(--accent-reins) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 111, 71, 0.3);
+        }
+        
+        button.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 111, 71, 0.4);
+        }
+        
+        button.primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        button.secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+        
+        button.secondary:hover {
+            border-color: var(--accent-saddle);
+            background: var(--bg-primary);
+        }
+        
+        /* Welcome screen */
+        .welcome-screen {
+            text-align: center;
+        }
+        
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        /* API Key Setup */
+        .api-setup {
+            background: var(--bg-primary);
+            padding: 24px;
+            border-radius: 16px;
+            margin: 20px 0;
+            border: 2px solid var(--border);
+        }
+        
+        .api-setup h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        
+        .api-setup p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .api-setup input {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .api-setup .helper-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        
+        .api-setup .helper-text a {
+            color: var(--accent-saddle);
+            text-decoration: none;
+        }
+        
+        .api-setup .helper-text a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Settings icon */
+        .settings-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: transform 0.3s ease;
+        }
+        
+        .settings-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Emoji grid */
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .emoji-option {
+            font-size: 2.5rem;
+            padding: 16px;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-primary);
+            text-align: center;
+        }
+        
+        .emoji-option:hover {
+            transform: scale(1.1);
+            border-color: var(--accent-saddle);
+            background: white;
+        }
+        
+        .emoji-option.selected {
+            border-color: var(--accent-highlight);
+            background: white;
+            transform: scale(1.05);
+        }
+        
+        /* Grounding scale */
+        .grounding-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+        }
+        
+        .grounding-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 12px;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-primary);
+            text-align: center;
+        }
+        
+        .grounding-option:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-saddle);
+            background: white;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        .grounding-option.selected {
+            border-color: var(--accent-highlight);
+            background: white;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px var(--shadow);
+        }
+        
+        .grounding-emoji {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+        
+        .grounding-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .grounding-description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.3;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .emoji-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .grounding-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Settings Icon -->
+    <div class="settings-icon hidden" id="settingsIcon" onclick="showSettings()" title="Settings">⚙️</div>
+    
+    <div class="container">
+        <!-- API Key Setup Screen -->
+        <div id="apiSetupScreen" class="hidden">
+            <div class="welcome-screen">
+                <div class="welcome-icon">🏇</div>
+                <h1>SaDL uP</h1>
+                <p class="subtitle">Self Daily Leadership Protocol</p>
+                
+                <div class="api-setup">
+                    <h3>🔐 Secure Setup</h3>
+                    <p>To enable AI-powered conversations, you'll need an Anthropic API key. This key is stored securely on your device and is never shared.</p>
+                    
+                    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+                    <p class="helper-text">
+                        Don't have a key? <a href="https://console.anthropic.com/settings/keys" target="_blank">Get one here</a> (free credits available)
+                    </p>
+                    <p class="helper-text">
+                        Your key is encrypted and stored only on this device. You can update or remove it anytime in settings.
+                    </p>
+                </div>
+                
+                <button class="primary" onclick="saveApiKey()">Save & Continue</button>
+            </div>
+        </div>
+        
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="hidden">
+            <div class="welcome-screen">
+                <div class="welcome-icon">🏇</div>
+                <h1>SaDL uP</h1>
+                <p class="subtitle">Self Daily Leadership Protocol</p>
+                <p class="subtitle" style="margin-top: -20px; font-size: 0.9rem;">Take the reins of your mental health journey</p>
+                <input type="text" id="nameInput" placeholder="What should I call you?" />
+                <button class="primary" onclick="saveName()">Let's Begin</button>
+            </div>
+        </div>
+        
+        <!-- Main Check-In Screen -->
+        <div id="checkInScreen" class="hidden">
+            <div id="greeting"></div>
+            
+            <!-- Conversation area -->
+            <div class="conversation" id="conversation"></div>
+            
+            <!-- Input area -->
+            <div id="inputArea"></div>
+        </div>
+    </div>
+
+    <script>
+        // User data
+        let userData = {
+            name: localStorage.getItem('userName') || '',
+            apiKey: localStorage.getItem('apiKey') || '',
+            responses: [],
+            conversationHistory: []
+        };
+        
+        // App state
+        let isWaitingForAI = false;
+        
+        // Initialize app
+        window.onload = function() {
+            if (!userData.apiKey) {
+                // Need API key first
+                document.getElementById('apiSetupScreen').classList.remove('hidden');
+            } else if (!userData.name) {
+                // Have API key, need name
+                document.getElementById('welcomeScreen').classList.remove('hidden');
+                document.getElementById('settingsIcon').classList.remove('hidden');
+            } else {
+                // All set - start check-in
+                document.getElementById('checkInScreen').classList.remove('hidden');
+                document.getElementById('settingsIcon').classList.remove('hidden');
+                startCheckIn();
+            }
+        };
+        
+        // Save API key
+        function saveApiKey() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            
+            if (!apiKey.startsWith('sk-ant-')) {
+                alert('Please enter a valid Anthropic API key (starts with sk-ant-)');
+                return;
+            }
+            
+            userData.apiKey = apiKey;
+            localStorage.setItem('apiKey', apiKey);
+            
+            // Move to name input
+            document.getElementById('apiSetupScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            document.getElementById('settingsIcon').classList.remove('hidden');
+        }
+        
+        // Save user name
+        function saveName() {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value.trim();
+            
+            if (name) {
+                userData.name = name;
+                localStorage.setItem('userName', name);
+                
+                // Transition to check-in
+                document.getElementById('welcomeScreen').classList.add('hidden');
+                document.getElementById('checkInScreen').classList.remove('hidden');
+                startCheckIn();
+            } else {
+                alert('Please enter your name to continue');
+            }
+        }
+        
+        // Show settings
+        function showSettings() {
+            const response = confirm('Would you like to update your API key or reset the app?');
+            if (response) {
+                const action = prompt('Type "key" to update API key or "reset" to clear all data:');
+                if (action === 'key') {
+                    const newKey = prompt('Enter new API key:');
+                    if (newKey && newKey.startsWith('sk-ant-')) {
+                        userData.apiKey = newKey;
+                        localStorage.setItem('apiKey', newKey);
+                        alert('API key updated successfully!');
+                    }
+                } else if (action === 'reset') {
+                    if (confirm('This will delete all your data. Are you sure?')) {
+                        localStorage.clear();
+                        location.reload();
+                    }
+                }
+            }
+        }
+        
+        // Start check-in
+        function startCheckIn() {
+            const greeting = document.getElementById('greeting');
+            const now = new Date();
+            const hour = now.getHours();
+            let timeOfDay = 'evening';
+            
+            if (hour < 12) timeOfDay = 'morning';
+            else if (hour < 17) timeOfDay = 'afternoon';
+            
+            greeting.innerHTML = `
+                <h1>Hey ${userData.name} 🏇</h1>
+                <p class="subtitle">Good ${timeOfDay}. Let's saddle up and check in together.</p>
+            `;
+            
+            // Start AI conversation
+            sendAIMessage("You are SaDL uP, a compassionate mental health companion app. The user's name is " + userData.name + ". Greet them warmly and ask how they're feeling right now. Keep it conversational and friendly, like talking to a supportive friend. Use the horseback riding metaphor occasionally (e.g., 'taking the reins', 'in the saddle') but don't overdo it.", true);
+        }
+        
+        // Send message to Claude AI
+        async function sendAIMessage(userMessage, isSystemPrompt = false) {
+            if (isWaitingForAI) return;
+            
+            // Add user message to conversation (if not system prompt)
+            if (!isSystemPrompt) {
+                addUserBubble(userMessage);
+                userData.conversationHistory.push({
+                    role: "user",
+                    content: userMessage
+                });
+            }
+            
+            // Show typing indicator
+            const typingDiv = showTypingIndicator();
+            isWaitingForAI = true;
+            
+            try {
+                // Prepare messages for API
+                let messages = [];
+                
+                if (isSystemPrompt) {
+                    messages.push({
+                        role: "user",
+                        content: userMessage
+                    });
+                } else {
+                    // Include conversation history
+                    messages = [...userData.conversationHistory];
+                }
+                
+                // Call Claude API
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': userData.apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-5-20250929',
+                        max_tokens: 1024,
+                        messages: messages,
+                        system: "You are SaDL uP (Self Daily Leadership Protocol), a warm, supportive mental health companion. You help users take leadership of their mental health journey using a horseback riding metaphor - they're learning to 'take the reins' and 'stay in the saddle.' Keep responses conversational, empathetic, and encouraging. Avoid clinical jargon. Ask thoughtful follow-up questions. Celebrate their efforts to show up for themselves."
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('API request failed: ' + response.status);
+                }
+                
+                const data = await response.json();
+                const aiResponse = data.content[0].text;
+                
+                // Remove typing indicator
+                typingDiv.remove();
+                
+                // Add AI response to conversation
+                addAIBubble(aiResponse);
+                userData.conversationHistory.push({
+                    role: "assistant",
+                    content: aiResponse
+                });
+                
+            } catch (error) {
+                console.error('Error calling Claude API:', error);
+                typingDiv.remove();
+                addAIBubble("I'm having trouble connecting right now. Please check your API key in settings or try again in a moment.");
+            }
+            
+            isWaitingForAI = false;
+            
+            // Show input field for user to respond
+            showTextInput();
+        }
+        
+        // Add user bubble to conversation
+        function addUserBubble(text) {
+            const conversation = document.getElementById('conversation');
+            const bubble = document.createElement('div');
+            bubble.className = 'message user';
+            bubble.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+            conversation.appendChild(bubble);
+            scrollToBottom();
+        }
+        
+        // Add AI bubble to conversation
+        function addAIBubble(text) {
+            const conversation = document.getElementById('conversation');
+            const bubble = document.createElement('div');
+            bubble.className = 'message app';
+            bubble.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+            conversation.appendChild(bubble);
+            scrollToBottom();
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+            const conversation = document.getElementById('conversation');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message app';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            conversation.appendChild(typingDiv);
+            scrollToBottom();
+            return typingDiv;
+        }
+        
+        // Show text input
+        function showTextInput() {
+            const inputArea = document.getElementById('inputArea');
+            inputArea.innerHTML = `
+                <div class="input-container">
+                    <textarea id="userInput" placeholder="Type your response..."></textarea>
+                    <div class="button-container">
+                        <button class="primary" onclick="submitUserInput()">Send</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('userInput').focus();
+        }
+        
+        // Submit user input
+        function submitUserInput() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                alert('Please type a response');
+                return;
+            }
+            
+            // Clear input area
+            document.getElementById('inputArea').innerHTML = '';
+            
+            // Send to AI
+            sendAIMessage(text);
+        }
+        
+        // Scroll to bottom of conversation
+        function scrollToBottom() {
+            setTimeout(() => {
+                const container = document.querySelector('.container');
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Allow Enter key to send message (Shift+Enter for new line)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const userInput = document.getElementById('userInput');
+                if (userInput && document.activeElement === userInput) {
+                    e.preventDefault();
+                    submitUserInput();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
