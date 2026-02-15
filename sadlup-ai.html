@@ -628,13 +628,11 @@
                 }
                 
                 // Call Claude API
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                const response = await fetch('https://small-queen-948a.dbishinschooly.workers.dev', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': userData.apiKey,
-                        'anthropic-version': '2023-06-01'
-                    },
+                       headers: {
+    'Content-Type': 'application/json'
+},
                     body: JSON.stringify({
                         model: 'claude-sonnet-4-5-20250929',
                         max_tokens: 1024,
